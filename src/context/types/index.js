@@ -1,0 +1,4 @@
+const SHOW_MODAL = "SHOW_MODAL";
+const CLOSE_MODAL = "CLOSE_MODAL";
+
+export { SHOW_MODAL, CLOSE_MODAL }
