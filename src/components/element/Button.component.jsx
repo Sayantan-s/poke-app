@@ -21,8 +21,28 @@ outline: none;
 border: none;
 font-family: ${props => props.theme.fonts.body};
 font-size: 1.8rem;
-font-weight : 500;
+font-weight : 600;
 cursor : pointer;
-color : ${props => props.theme.colors.purple.dark};
-background-color : ${props => props.theme.colors.purple.light};
+color : ${props => {
+    switch(props.type){
+        case 'blue':
+            return props.theme.colors.blue.dark;
+        case 'purple':
+            return props.theme.colors.purple.dark;
+        case 'green':
+            return props.theme.colors.blue.dark;
+        default: return props.theme.colors.blue.dark;
+    }
+}};
+background-color : ${props => {
+     switch(props.type){
+        case 'blue':
+            return props.theme.colors.blue.light;
+        case 'purple':
+            return props.theme.colors.purple.light;
+        case 'blue':
+            return props.theme.colors.blue.light;
+        default: return props.theme.colors.blue.light;
+    }
+}};
 `

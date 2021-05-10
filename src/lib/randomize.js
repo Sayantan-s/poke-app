@@ -1,0 +1,1 @@
+export default (number) => ~~(Math.random() * number);

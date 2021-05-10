@@ -9,7 +9,7 @@ const Artboard = () => {
 
     return (
       <Canvas>
-         <Button onClick={() => modalReducer(SHOW_MODAL)}>
+         <Button type="purple" onClick={() => modalReducer(SHOW_MODAL)}>
            Let's, start the game!
          </Button>
       </Canvas>
