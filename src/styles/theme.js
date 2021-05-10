@@ -14,9 +14,9 @@ const theme = {
             dark : '#374151'
         },
         red : {
-            light : '#d1c4e9',
-            medium : '#7e57c2',
-            dark : '#512da8'
+            light : '#FCE2E1',
+            medium : '#EF4744',
+            dark : '#9A281C'
         },
         blue : {
             light : '#DBEAFE',

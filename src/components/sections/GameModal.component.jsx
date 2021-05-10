@@ -6,6 +6,8 @@ import randomize from 'lib/randomize'
 import React, { useCallback, useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import styled from 'styled-components'
+import Lottie from 'react-lottie';
+import { Failure, Success } from 'animations'
 
 const Modal = () => {
 
@@ -16,8 +18,43 @@ const Modal = () => {
 
     const [ pokeGuess, setGuess ] = useState('');
 
+    const [ result, setResult ] = useState({
+        isCorrect : false,
+        error : '',
+    })
+
     const onChangeHandler = eve => {
-        setGuess(eve.target.value)
+        setGuess(eve.target.value);
+        setResult(prevState => ({
+            ...prevState,
+            isCorrect : false,
+            error : ``
+        }))
+    }
+
+    const onSubmitHandler = eve => {
+        eve.preventDefault();
+        if(pokeGuess.trim() === ''){
+            return setResult(prevState => ({
+                ...prevState,
+                isCorrect : false,
+                error : `Please don't leave the guess, blank!`
+            }))
+        }
+        if(pokeGuess.toLowerCase() !== pokeData.pokeName.toLowerCase()){
+            return setResult(prevState => ({
+                ...prevState,
+                isCorrect : false,
+                error : `Wrong answer, please try again!`
+            }))
+        }
+        if(pokeGuess.toLowerCase() === pokeData.pokeName.toLowerCase()){
+            return setResult(prevState => ({
+                ...prevState,
+                isCorrect : true,
+                error : ``
+            }))
+        }
     }
 
     const requester = useCallback(async req => {
@@ -49,6 +86,16 @@ const Modal = () => {
        requester('RANDOMIZE')
     },[requester])
 
+
+    const animationOptions = {
+        loop: false,
+        autoplay: true, 
+        animationData:  result.error ? Failure : Success,
+        rendererSettings: {
+          preserveAspectRatio: 'xMidYMid slice'
+        }
+      };
+
     return createPortal(
         <Dialog>
             <div className="poke">
@@ -67,12 +114,21 @@ const Modal = () => {
                 as="h2">
                     Guess the pokemon!
                 </Typography>
-                <Form>
-                    <TextField 
-                        placeholder="e.g. bulbasor"
-                        value={pokeGuess}
-                        onChange={onChangeHandler}
-                    />
+                <Form onSubmit={onSubmitHandler}>
+                    <div className="input">
+                        <TextField 
+                            placeholder="e.g. bulbasor"
+                            value={pokeGuess}
+                            onChange={onChangeHandler}
+                        >
+                             { (result.error || result.isCorrect) && <Lottie  
+                                options={animationOptions}
+                                height={22}
+                                width={22} 
+                                />}
+                        </TextField>
+                    {result.error && <p className="input_error">{result.error}</p>}
+                    </div>
                     <Button>
                         Submit
                     </Button>
@@ -117,11 +173,25 @@ padding : 2rem 4rem;
 `
 const Form = styled.form`
 display : flex;
+align-items: center;
 width: 80%;
-margin-bottom : 3rem;
-input{
+margin-bottom : 5rem;
+position: relative;
+.input{
     flex : 1;
     margin-right : 1.6rem;
+    position: relative;
+    input{
+        width: 100%;
+    }
+    &_error{
+        position: absolute;
+        bottom: -2.5rem;
+        color : ${props => props.theme.colors.red.medium};
+    }
+    &_error input:invalid{
+        border-color : ${props => props.theme.colors.red.medium};
+    }
 }
 `
 
