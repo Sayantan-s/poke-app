@@ -5,7 +5,7 @@ import Loader from 'lib/Loader'
 import randomize from 'lib/randomize'
 import React, { useCallback, useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
-import styled from 'styled-components'
+import styled, { css } from 'styled-components'
 import Lottie from 'react-lottie';
 import { Failure, Success } from 'animations'
 
@@ -23,38 +23,45 @@ const Modal = () => {
         error : '',
     })
 
+    const validator = type => {
+        switch(type){
+            case 'EMPTY':
+                return setResult(prevState => ({
+                    ...prevState,
+                    isCorrect : false,
+                    error : `Please don't leave the guess, blank!`
+                }))
+            case 'WRONG_INPUT':
+                return setResult(prevState => ({
+                    ...prevState,
+                    isCorrect : false,
+                    error : `Wrong answer, please try again!`
+                }))
+            case 'RIGHT_INPUT':
+                return setResult(prevState => ({
+                    ...prevState,
+                    isCorrect : true,
+                    error : ``
+                }))
+            default :
+                return setResult(prevState => ({
+                        ...prevState,
+                        isCorrect : false,
+                        error : ``
+                    }))
+        }
+    }
+
     const onChangeHandler = eve => {
         setGuess(eve.target.value);
-        setResult(prevState => ({
-            ...prevState,
-            isCorrect : false,
-            error : ``
-        }))
+        validator();
     }
 
     const onSubmitHandler = eve => {
         eve.preventDefault();
-        if(pokeGuess.trim() === ''){
-            return setResult(prevState => ({
-                ...prevState,
-                isCorrect : false,
-                error : `Please don't leave the guess, blank!`
-            }))
-        }
-        if(pokeGuess.toLowerCase() !== pokeData.pokeName.toLowerCase()){
-            return setResult(prevState => ({
-                ...prevState,
-                isCorrect : false,
-                error : `Wrong answer, please try again!`
-            }))
-        }
-        if(pokeGuess.toLowerCase() === pokeData.pokeName.toLowerCase()){
-            return setResult(prevState => ({
-                ...prevState,
-                isCorrect : true,
-                error : ``
-            }))
-        }
+        if(pokeGuess.trim() === '') validator('EMPTY')
+        if(pokeGuess.toLowerCase() !== pokeData.pokeName.toLowerCase()) validator('WRONG_INPUT')
+        if(pokeGuess.toLowerCase() === pokeData.pokeName.toLowerCase()) validator('RIGHT_INPUT')
     }
 
     const requester = useCallback(async req => {
@@ -114,9 +121,13 @@ const Modal = () => {
                 as="h2">
                     Guess the pokemon!
                 </Typography>
-                <Form onSubmit={onSubmitHandler}>
+                <Form
+                danger={result.error}
+                success={result.isCorrect}
+                onSubmit={onSubmitHandler}>
                     <div className="input">
                         <TextField 
+                            className="input_field"
                             placeholder="e.g. bulbasor"
                             value={pokeGuess}
                             onChange={onChangeHandler}
@@ -187,11 +198,18 @@ position: relative;
     &_error{
         position: absolute;
         bottom: -2.5rem;
-        color : ${props => props.theme.colors.red.medium};
+        color : ${props => props.theme.colors.danger.medium};
     }
-    &_error input:invalid{
-        border-color : ${props => props.theme.colors.red.medium};
-    }
+    ${props => props.danger && css`
+        &_field{
+            border: 2px solid ${props => props.theme.colors.danger.light};
+        }
+    `}
+    ${props => props.success && css`
+        &_field{
+            border: 2px solid ${props => props.theme.colors.success.light};
+        }
+    `}
 }
 `
 

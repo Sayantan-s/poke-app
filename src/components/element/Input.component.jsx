@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import React from 'react'
 import styled, { css } from 'styled-components'
 
-const TextField = ({inpType,ElementConfig,value,onChange,children, ...otherInpProps}) => {
+const TextField = ({inpType,ElementConfig,value,onChange,children,className, ...otherInpProps}) => {
    let inputEle = null;
 
    switch(inpType){
@@ -28,7 +28,7 @@ const TextField = ({inpType,ElementConfig,value,onChange,children, ...otherInpPr
             />
    }
 
-    return <Wrapper>
+    return <Wrapper className={className}>
                 {inputEle}
                 {children}
             </Wrapper>
@@ -62,4 +62,5 @@ padding: 1.8rem;
 border-radius: 1.8rem;
 display: flex;
 align-items: center;
+
 `

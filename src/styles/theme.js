@@ -13,10 +13,15 @@ const theme = {
             medium : '#9CA3AF',
             dark : '#374151'
         },
-        red : {
+        danger : {
             light : '#FCE2E1',
             medium : '#EF4744',
             dark : '#9A281C'
+        },
+        success : {
+            light : '#DCEDC8',
+            medium : '#8BC34A',
+            dark : '#558B2F'
         },
         blue : {
             light : '#DBEAFE',
