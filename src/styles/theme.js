@@ -29,10 +29,12 @@ const theme = {
             dark : '#2247AF'
         },
         backgroundColor : '#7c4dff',
-        modal : '#fafafa'
+        white : '#fafafa'
     },
     breakpoints : {
-
+        tab : '1024px',
+        minTab : '768px',
+        mobile : '450px'
     }
 }
 

@@ -3,11 +3,13 @@ import { motion } from 'framer-motion'
 import http from 'lib/https'
 import Loader from 'lib/Loader'
 import randomize from 'lib/randomize'
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import styled, { css } from 'styled-components'
 import Lottie from 'react-lottie';
 import { Failure, Success } from 'animations'
+import { GlobalContext } from 'context'
+import { CLOSE_MODAL } from 'context/types'
 
 const Modal = () => {
 
@@ -22,6 +24,8 @@ const Modal = () => {
         isCorrect : false,
         error : '',
     })
+
+    const { modalReducer } = useContext(GlobalContext)
 
     const validator = type => {
         switch(type){
@@ -104,7 +108,10 @@ const Modal = () => {
       };
 
     return createPortal(
-        <Dialog>
+        <Dialog 
+        initial={{ scale : 0 }}
+        animate={{ scale : 1 }}
+        exit={{ scale : 0 }} >
             <div className="poke">
                 <Image
                     width={200}
@@ -140,24 +147,37 @@ const Modal = () => {
                         </TextField>
                     {result.error && <p className="input_error">{result.error}</p>}
                     </div>
-                    <Button>
+                    <Button
+                    minWidth="medium" 
+                    secondary>
                         Submit
                     </Button>
                 </Form>
                 <div className="panel_requesters">
                     <Button
-                    type="purple"
+                    minWidth="large"
+                    secondary
+                    color="purple"
                     className="panel_requesters-random" 
                     onClick={() => requester('RANDOMIZE')}>
                         Randomize 
                     </Button>
                     <Button
+                    primary
+                    minWidth="large"
+                    color="purple"
                     className="panel_requesters-new" 
                     onClick={() => requester('NEW_POKE')}>
                         New Pokemon
                     </Button>
                 </div>
             </Panel>
+            <CloseButton onClick={() => modalReducer(CLOSE_MODAL)}>
+                <svg width={24} height={24} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M8.46447 15.5355L15.5355 8.46446" stroke="black" strokeWidth="2" strokeLinecap="round" />
+                    <path d="M8.46447 8.46447L15.5355 15.5355" stroke="black" strokeWidth="2" strokeLinecap="round" />
+                </svg>
+            </CloseButton>
         </Dialog>,
         document.getElementById('modals')
     )
@@ -167,7 +187,7 @@ export default Modal
 
 
 const Dialog = styled(motion.figure)`
-background-color : ${props => props.theme.colors.modal};
+background-color : ${props => props.theme.colors.white};
 width: 90rem;
 height:45rem;
 border-radius : 3rem;
@@ -176,10 +196,20 @@ padding : 2rem 4rem;
     position: relative;
     &-img{
         position: absolute;
-        top: -120px;
+        top: -12rem;
         left: 50%;
         transform : translate(-50%,0%);
+        @media only screen and (max-width: ${props => props.theme.breakpoints.tab}){
+            top: -18rem;
+        }
+        @media only screen and (max-width: ${props => props.theme.breakpoints.minTab}){
+            top: -20rem;
+        }
     }
+}
+@media only screen and (max-width: ${props => props.theme.breakpoints.minTab}){
+    max-width: 100rem;
+    width : max-content;
 }
 `
 const Form = styled.form`
@@ -201,15 +231,34 @@ position: relative;
         color : ${props => props.theme.colors.danger.medium};
     }
     ${props => props.danger && css`
+        input{
+            color : ${props => props.theme.colors.danger.medium}
+        }
         &_field{
             border: 2px solid ${props => props.theme.colors.danger.light};
         }
     `}
     ${props => props.success && css`
+        input{
+            color : ${props => props.theme.colors.success.medium}
+        }
         &_field{
             border: 2px solid ${props => props.theme.colors.success.light};
         }
     `}
+}
+@media only screen and (max-width: ${props => props.theme.breakpoints.minTab}){
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    .input{
+        margin-bottom: 1.6rem;
+        margin-right : 0;
+        &_error{
+            text-align: center;
+            width: 100%;
+        }
+    }
 }
 `
 
@@ -238,6 +287,28 @@ position: relative;
         &-new{
             margin-left: 2rem;
         }
+    }
+}
+`
+
+const CloseButton = styled(Button)`
+padding:0;
+width: 4rem;
+height: 4rem;
+background-color: ${props => props.theme.colors.danger.medium};
+position: absolute;
+top: 1.5rem;
+right : 1.5rem;
+border-radius: 50%;
+display: flex;
+justify-content: center;
+align-items: center;
+box-shadow : 0px 1px 15px ${props => `${props.theme.colors.danger.medium}70` };
+svg{
+    width: 3rem;
+    height: 3rem;
+    path{
+        stroke : ${props => props.theme.colors.white};
     }
 }
 `

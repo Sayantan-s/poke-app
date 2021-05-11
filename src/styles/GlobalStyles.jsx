@@ -9,6 +9,9 @@ export default createGlobalStyle`
 html{
         scroll-behavior : smooth;
         font-size : 62.5%;
+        @media only screen and (max-width: ${props => props.theme.breakpoints.tab}){
+            font-size : 50%;
+        }
         body{
             max-width : 100vw;
             overflow-x : hidden;

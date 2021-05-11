@@ -9,13 +9,19 @@ const Backdrop = () => {
     
     const { modalReducer } = useContext(GlobalContext)
 
-    return createPortal(<Paper onClick={() => modalReducer(CLOSE_MODAL)} />, document.getElementById('backdrop'))
+    return createPortal(
+    <Paper
+        initial={{ opacity : 0 }}
+        animate={{ opacity : 1 }}
+        exit={{ opacity : 0 }}  
+        onClick={() => modalReducer(CLOSE_MODAL)} 
+    />, document.getElementById('backdrop'))
 }
 
 export default Backdrop
 
 const Paper = styled(motion.div)`
-background-color : rgba(0,0,0,0.2);
+background-color : rgba(0,0,0,0.5);
 width:100vw;
 height: 100vh;
 overflow-x: hidden;

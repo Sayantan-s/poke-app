@@ -44,6 +44,7 @@ font-size : 1.6rem;
 font-weight : 500;
 border: none;
 color : ${props => props.theme.colors.gray.dark };
+background-color: transparent;
 ::placeholder{
     color : ${props => props.theme.colors.gray.medium };
 }

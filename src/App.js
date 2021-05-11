@@ -10,16 +10,15 @@ function App() {
   return (
     <>
       <Artboard />
-      {
-        modalIsOpen && <>
-        <AnimatePresence>
-          <GameModal />
-        </AnimatePresence>
-        <AnimatePresence>
-          <Backdrop />
-        </AnimatePresence>
-        </>
-      }
+      <AnimatePresence>
+        {
+          modalIsOpen &&   
+          <>
+            <GameModal />
+            <Backdrop />
+          </>
+        }
+      </AnimatePresence>
     </>
   );
 }
