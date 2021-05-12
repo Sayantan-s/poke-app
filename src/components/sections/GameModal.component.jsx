@@ -3,13 +3,14 @@ import { motion } from 'framer-motion'
 import http from 'lib/https'
 import Loader from 'lib/Loader'
 import randomize from 'lib/randomize'
-import React, { useCallback, useContext, useEffect, useReducer, useState } from 'react'
+import React, { useContext, useEffect, useReducer, useState } from 'react'
 import { createPortal } from 'react-dom'
 import styled, { css } from 'styled-components'
 import Lottie from 'react-lottie';
 import { Failure, Success } from 'animations'
 import { GlobalContext } from 'context'
 import { CLOSE_MODAL } from 'context/types'
+import { useTimeout } from 'hooks'
 
 const toastState = {
     isToast: false,
@@ -28,7 +29,7 @@ const toastReducer = ( state = toastState, { type, payload } ) => {
             return {
                 ...state,
                 isToast : true,
-                toastText : `Requesting poke of type : ${payload}...`
+                toastText : `Requesting poke of type : ${payload}`
             }
         case 'REMOVE_TOAST' : 
             return {
@@ -49,6 +50,11 @@ const Modal = () => {
 
     const [ pokeGuess, setGuess ] = useState('');
 
+    const [pokeType,setType] = useState({
+        name : '',
+        url : ''
+    });
+
     const [ result, setResult ] = useState({
         isCorrect : false,
         error : '',
@@ -56,7 +62,9 @@ const Modal = () => {
 
     const [ toast, dispatch ] = useReducer(toastReducer, toastState);
 
-    const { modalReducer } = useContext(GlobalContext)
+    const { modalReducer } = useContext(GlobalContext);
+
+    const timer = useTimeout(2000);
 
     const validator = type => {
         switch(type){
@@ -78,30 +86,43 @@ const Modal = () => {
                     isCorrect : true,
                     error : ``
                 }))
-            default :
+            case 'SET_INITIAL':
                 return setResult(prevState => ({
-                        ...prevState,
-                        isCorrect : false,
-                        error : ``
-                    }))
+                    ...prevState,
+                    isCorrect : false,
+                    error : ``
+                }))
+            default :
+                return result;
         }
     }
 
     const onChangeHandler = eve => {
         setGuess(eve.target.value);
-        validator();
+        validator('SET_INITIAL');
     }
 
     const onSubmitHandler = eve => {
         eve.preventDefault();
         if(pokeGuess.trim() === '') validator('EMPTY')
-        if(pokeGuess.toLowerCase() !== pokeData.pokeName.toLowerCase()) validator('WRONG_INPUT')
-        if(pokeGuess.toLowerCase() === pokeData.pokeName.toLowerCase()) validator('RIGHT_INPUT')
+        else if(pokeGuess.toLowerCase() !== pokeData.pokeName.toLowerCase()) validator('WRONG_INPUT')
+        else if(pokeGuess.toLowerCase() === pokeData.pokeName.toLowerCase()) {
+            validator('RIGHT_INPUT')
+            return timer(() => {
+                setGuess('');
+                requester('RANDOMIZE');
+            })
+        }
     }
 
-    const requester = useCallback(async req => {
+    const requester = async req => {
         if(req === 'INITIAL') {
             const { data,status } = await http.get(`pokemon/${randomize(649)}`);
+            setType(prevState => ({
+                ...prevState,
+                name : data.types[0].type.name,
+                url : data.types[0].type.url.substr(-2)
+            }))
             if(status === 200){
                 setData(prevData => ({
                     ...prevData,
@@ -111,12 +132,15 @@ const Modal = () => {
             }
         }
         if(req === 'RANDOMIZE') {
-            validator();
+            validator('SET_INITIAL');
             dispatch({ type : 'REQUEST_RANDOM'})
             const { data,status } = await http.get(`pokemon/${randomize(649)}`);
-            setTimeout(() => {
-                dispatch({ type : 'REMOVE_TOAST'})
-            },2000)
+            timer(() => dispatch({ type : 'REMOVE_TOAST'}));
+            setType(prevState => ({
+                ...prevState,
+                name : data.types[0].type.name,
+                url : data.types[0].type.url.substr(-2)
+            }));
             if(status === 200){
                 setData(prevData => ({
                     ...prevData,
@@ -125,14 +149,14 @@ const Modal = () => {
                 }))
             }
         }
-        else if(req === 'NEW_POKE') {
-            validator();
-            const res = await http.get(`type/${randomize(18)}`);
-            dispatch({ type : 'REQUST_SAME_TYPE', payload : res.data.name});
-            const { data,status } = await http.get(`pokemon/${randomize(res.data.pokemon.length)}`);
-            setTimeout(() => {
-                dispatch({ type : 'REMOVE_TOAST'})
-            },2000)
+        if(req === 'NEW_POKE') {
+            validator('SET_INITIAL');
+            dispatch({ type : 'REQUST_SAME_TYPE', payload : pokeType.name});
+            const res = await http.get(`type/${pokeType.url}`);
+            const pokeNumberArray = res.data.pokemon[randomize(res.data.pokemon.length)].pokemon.url.split('/');
+            const pokeNumber = pokeNumberArray[pokeNumberArray.length - 2]
+            const { data,status } = await http.get(`pokemon/${pokeNumber}`);
+            timer(() => dispatch({ type : 'REMOVE_TOAST'}))
             if(status === 200){
                 setData(prevData => ({
                     ...prevData,
@@ -141,11 +165,14 @@ const Modal = () => {
                 }))
             }
         }
-     },[])
+     }
+
+
+    console.log(pokeType);
 
     useEffect(() => {
-       requester('RANDOMIZE')
-    },[requester])
+       requester('INITIAL')
+    },[])
 
 
     const animationOptions = {
@@ -195,7 +222,7 @@ const Modal = () => {
                                 width={22} 
                                 />}
                         </TextField>
-                    {result.error && <p className="input_error">{result.error}</p>}
+                    {result.error && <Typography className="input_error">{result.error}</Typography>}
                     </div>
                     <Button
                     minWidth="medium" 
@@ -230,7 +257,8 @@ const Modal = () => {
             </CloseButton>
             <Toast
             text={toast.toastText} 
-            condition={toast.isToast}/>
+            condition={toast.isToast}
+            />
         </Dialog>,
         document.getElementById('modals')
     )
@@ -306,7 +334,7 @@ position: relative;
     flex-direction: column;
     align-items: stretch;
     .input{
-        margin-bottom: 1.6rem;
+        margin-bottom: 3rem;
         margin-right : 0;
         &_error{
             text-align: center;
