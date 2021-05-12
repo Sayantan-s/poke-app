@@ -1,1 +1,3 @@
-export default (number) => ~~(Math.random() * number);
+const randomize  = number => ~~(Math.random() * number);
+
+export default randomize

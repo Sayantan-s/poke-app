@@ -6,5 +6,6 @@ import Backdrop from './sections/Backdrop.component'
 import Typography from './element/Typography.component'
 import TextField from './element/Input.component'
 import Image from './element/Image.component'
+import Toast from './element/Toast.component' 
 
-export { Box, Button, Artboard, GameModal, Backdrop, Typography, TextField, Image }
+export { Box, Button, Artboard, GameModal, Backdrop, Typography, TextField, Image, Toast }

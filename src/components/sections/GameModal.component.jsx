@@ -1,15 +1,44 @@
-import { TextField, Typography, Image, Button } from 'components'
+import { TextField, Typography, Image, Button, Toast } from 'components'
 import { motion } from 'framer-motion'
 import http from 'lib/https'
 import Loader from 'lib/Loader'
 import randomize from 'lib/randomize'
-import React, { useCallback, useContext, useEffect, useState } from 'react'
+import React, { useCallback, useContext, useEffect, useReducer, useState } from 'react'
 import { createPortal } from 'react-dom'
 import styled, { css } from 'styled-components'
 import Lottie from 'react-lottie';
 import { Failure, Success } from 'animations'
 import { GlobalContext } from 'context'
 import { CLOSE_MODAL } from 'context/types'
+
+const toastState = {
+    isToast: false,
+    toastText : ''
+}
+
+const toastReducer = ( state = toastState, { type, payload } ) => {
+    switch(type){
+        case 'REQUEST_RANDOM':
+            return {
+                ...state,
+                isToast : true,
+                toastText : 'Requesting random poke...'
+            }
+        case 'REQUST_SAME_TYPE': 
+            return {
+                ...state,
+                isToast : true,
+                toastText : `Requesting poke of type : ${payload}...`
+            }
+        case 'REMOVE_TOAST' : 
+            return {
+                ...state,
+                isToast : false,
+                toastText : ''
+            }
+        default: return state;
+    }
+}
 
 const Modal = () => {
 
@@ -24,6 +53,8 @@ const Modal = () => {
         isCorrect : false,
         error : '',
     })
+
+    const [ toast, dispatch ] = useReducer(toastReducer, toastState);
 
     const { modalReducer } = useContext(GlobalContext)
 
@@ -69,27 +100,46 @@ const Modal = () => {
     }
 
     const requester = useCallback(async req => {
+        if(req === 'INITIAL') {
+            const { data,status } = await http.get(`pokemon/${randomize(649)}`);
+            if(status === 200){
+                setData(prevData => ({
+                    ...prevData,
+                    pokeImg : data.sprites?.other.dream_world.front_default,
+                    pokeName : data.name
+                }))
+            }
+        }
         if(req === 'RANDOMIZE') {
-         const { data,status } = await http.get(`pokemon/${randomize(649)}`);
-         console.log(data)
-         if(status === 200){
-            setData(prevData => ({
-                ...prevData,
-                pokeImg : data.sprites?.other.dream_world.front_default,
-                pokeName : data.name
-            }))
-         }
+            validator();
+            dispatch({ type : 'REQUEST_RANDOM'})
+            const { data,status } = await http.get(`pokemon/${randomize(649)}`);
+            setTimeout(() => {
+                dispatch({ type : 'REMOVE_TOAST'})
+            },2000)
+            if(status === 200){
+                setData(prevData => ({
+                    ...prevData,
+                    pokeImg : data.sprites?.other.dream_world.front_default,
+                    pokeName : data.name
+                }))
+            }
         }
         else if(req === 'NEW_POKE') {
-         const res = await http.get(`type/${randomize(18)}`);
-         const { data,status } = await http.get(`pokemon/${randomize(res.data.pokemon.length)}`);
-         if(status === 200){
-             setData(prevData => ({
-                ...prevData,
-                pokeImg : data.sprites?.other.dream_world.front_default,
-                pokeName : data.name
-            }))
-         }
+            validator();
+            const res = await http.get(`type/${randomize(18)}`);
+            dispatch({ type : 'REQUST_SAME_TYPE', payload : res.data.name});
+            const { data,status } = await http.get(`pokemon/${randomize(res.data.pokemon.length)}`);
+            setTimeout(() => {
+                dispatch({ type : 'REMOVE_TOAST'})
+            },2000)
+            if(status === 200){
+                setData(prevData => ({
+                    ...prevData,
+                    pokeImg : data.sprites?.other.dream_world.front_default,
+                    pokeName : data.name
+                }))
+            }
         }
      },[])
 
@@ -139,7 +189,7 @@ const Modal = () => {
                             value={pokeGuess}
                             onChange={onChangeHandler}
                         >
-                             { (result.error || result.isCorrect) && <Lottie  
+                             {(result.error || result.isCorrect) && <Lottie  
                                 options={animationOptions}
                                 height={22}
                                 width={22} 
@@ -178,6 +228,9 @@ const Modal = () => {
                     <path d="M8.46447 8.46447L15.5355 15.5355" stroke="black" strokeWidth="2" strokeLinecap="round" />
                 </svg>
             </CloseButton>
+            <Toast
+            text={toast.toastText} 
+            condition={toast.isToast}/>
         </Dialog>,
         document.getElementById('modals')
     )
@@ -222,6 +275,7 @@ position: relative;
     flex : 1;
     margin-right : 1.6rem;
     position: relative;
+    transition : 0.3s all;
     input{
         width: 100%;
     }

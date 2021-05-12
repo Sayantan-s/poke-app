@@ -4,7 +4,7 @@ import { CLOSE_MODAL, SHOW_MODAL } from './types';
 export const GlobalContext = createContext();
 
 const Store = ({ children }) => {
-    const [ modalIsOpen, setModal ] = useState(true);
+    const [ modalIsOpen, setModal ] = useState(false);
 
     const modalReducer = (type) => {
       switch(type){
