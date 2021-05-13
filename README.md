@@ -2,7 +2,14 @@
 
 ## Tech stack:
 
-# Please run:
+-   React
+-   Styled components
+-   Framer motion
+-   React-lottie
+
+*   Axios
+
+## Please run:
 
 ```javascript
 npm i
