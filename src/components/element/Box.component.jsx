@@ -1,20 +1,18 @@
-import React, { forwardRef } from 'react'
-import styled from 'styled-components'
+import React, { forwardRef } from 'react';
+import styled from 'styled-components';
 
-const Box = ({ children, ...otherProps },ref) => {
+const Box = ({ children, ...otherProps }, ref) => {
     return (
-       <Container
-        ref={ref} 
-       {...otherProps}>
-           {children}
-       </Container>
-    )
-}
+        <Container ref={ref} {...otherProps}>
+            {children}
+        </Container>
+    );
+};
 
-export default forwardRef(Box)
+export default forwardRef(Box);
 
 const Container = styled.div`
-max-width : 144rem;
-margin : 0 auto;
-font-weight : 600;
-`
+    max-width: 144rem;
+    margin: 0 auto;
+    font-weight: 600;
+`;
